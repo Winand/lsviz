@@ -1,6 +1,5 @@
 package org.winand
 
-import io.qt.NonNull
 import io.qt.core.QAbstractItemModel
 import io.qt.core.QFileInfo
 import io.qt.core.QModelIndex
@@ -16,7 +15,6 @@ import io.qt.widgets.QFileDialog
 import io.qt.widgets.QFileIconProvider
 import io.qt.widgets.QLineEdit
 import io.qt.widgets.QMainWindow
-import io.qt.widgets.QMessageBox
 import io.qt.widgets.QStyle
 import io.qt.widgets.QTreeView
 import io.qt.widgets.QVBoxLayout
@@ -24,7 +22,7 @@ import io.qt.widgets.QWidget
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
-import kotlin.math.exp
+import kotlin.system.exitProcess
 
 val Path.parents: List<Path> // Path extension
     get() = generateSequence(this.parent) { it.parent }.toList()
@@ -263,6 +261,9 @@ class HdfsExplorer : QMainWindow() {
         }
     }
 
+    /**
+     * Load a new file list from file.
+     */
     private fun loadHdfsFile(filepath: String? = null) {
         val filepath = filepath ?: QFileDialog.getOpenFileName(
             this, "Open HDFS Log", "", "Text (*.txt)"
@@ -371,6 +372,9 @@ class HdfsExplorer : QMainWindow() {
         model!!.layoutChanged.emit()
     }
 
+    /**
+     * Recursively finds all expanded nodes.
+     */
     private fun saveExpansionState(index: QModelIndex = INVALID_INDEX): Sequence<FSNode> =
         childrenIndices(index)
             .filter(treeView::isExpanded)
@@ -378,6 +382,9 @@ class HdfsExplorer : QMainWindow() {
                 sequenceOf(model!!.fsNodeIndex[it.internalId()]!!) + saveExpansionState(it)
             }
 
+    /**
+     * Recursively re-expands nodes that were previously expanded.
+     */
     private fun restoreExpansionState(expandedNodes: MutableSet<FSNode>, index: QModelIndex = INVALID_INDEX): Unit =
         childrenIndices(index).forEach {
             val node = model!!.fsNodeIndex[it.internalId()]!!
@@ -399,5 +406,5 @@ fun main() {
     QApplication.initialize(arrayOf())
     val window = HdfsExplorer()
     window.show()
-    QApplication.exec()
+    exitProcess(QApplication.exec())
 }
