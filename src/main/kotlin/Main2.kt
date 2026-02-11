@@ -83,27 +83,22 @@ private class FSNode(
 
         fun sortKey(node: FSNode): Pair<Boolean, Comparable<*>> {
             // Rule 1 & 2: Folders always first
-            val dirFirst = node.isDir == reverse
             return when (sorting.column) {
-                Column.Name.id -> Pair(dirFirst, node.nameLower)
-                Column.Size.id -> Pair(dirFirst, if (node.isDir) node.nameLower else node.size)
+                Column.Name.id -> Pair(!node.isDir, node.nameLower)
+                Column.Size.id -> Pair(!node.isDir, if (node.isDir) node.nameLower else node.size)
                 Column.Modified.id -> Pair(false, node.modified)
                 Column.Permissions.id -> Pair(false, node.permissions)
                 Column.Owner.id -> Pair(false, node.owner)
                 else -> throw IllegalArgumentException("Unknown column index ${sorting.column}")
             }
         }
-        println("--- $reverse")
-        visibleChildren.forEach { println(it.name) }
-        val comparator = if (reverse)
+        visibleChildren.sortWith(if (reverse)
             compareBy<FSNode>{ sortKey(it).first }
                 .thenByDescending { sortKey(it).second }
         else
             compareBy<FSNode>{ sortKey(it).first }
                 .thenBy { sortKey(it).second }
-        visibleChildren.sortWith(comparator)
-        println("vvv")
-        visibleChildren.forEach { println(it.name) }
+        )
         currentSortState = sorting
     }
 }
@@ -373,7 +368,7 @@ class HdfsExplorer : QMainWindow() {
         val expansionState = saveExpansionState().toMutableSet()
         sortExpanded()
         restoreExpansionState(expansionState)
-        model!!.layoutAboutToBeChanged.emit()
+        model!!.layoutChanged.emit()
     }
 
     private fun saveExpansionState(index: QModelIndex = INVALID_INDEX): Sequence<FSNode> =

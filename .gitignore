@@ -46,3 +46,4 @@ bin/
 .idea
 gradle
 qt
+*qtbase*.7z
