@@ -45,5 +45,6 @@ bin/
 build
 target
 .bsp
+__pycache__
 qt
 *qtbase*.7z

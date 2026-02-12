@@ -1,0 +1,19 @@
+[project]
+name = "lsviz"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Andrey Makarov", email = "winandfx@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "pyside6-essentials>=6.10.2",
+]
+
+[project.scripts]
+lsviz = "lsviz.main:main"
+
+[build-system]
+requires = ["uv_build>=0.10.1,<0.11.0"]
+build-backend = "uv_build"
