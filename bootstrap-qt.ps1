@@ -3,7 +3,8 @@ param (
     [string]$Version = "6.10.2",
     # QtJambi requires msvc2022_64 https://www.qtjambi.io/doc/First-Steps-With-QtJambi.md
     [string]$Toolchain = "msvc2022_64", # msvc2022_64, mingw, llvm_mingw
-    [string]$Destination = "qt"
+    [string]$Destination = "qt",
+    [switch]$Stripped # keep dlls only
 )
 
 if (Test-Path -Path $Destination) {
@@ -40,6 +41,10 @@ if ($webContent.Content -match $filePattern) {
         if (Test-Path $releaseFilePath) {
             Remove-Item $i.FullName -Force
         }
+    }
+
+    if ($Stripped) {
+        Get-ChildItem -Path $Destination -Recurse -File -Exclude *.dll | Remove-Item -Force
     }
 } else {
     Write-Error "Distribution file not found in repo" -ErrorAction Stop
