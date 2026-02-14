@@ -116,16 +116,16 @@ private class FSModel(val rootNode: FSNode) : QAbstractItemModel() {
         return createIndex(row, column, pItem.visibleChildren[row].id)
     }
 
-    override fun parent(index: QModelIndex): QModelIndex {
-        if (!index.isValid)
+    override fun parent(child: QModelIndex): QModelIndex {
+        if (!child.isValid)
             return INVALID_INDEX
-        val childItemId = index.internalId()
-        val pItem = fsNodeIndex[childItemId]!!.parent
-        if (pItem == rootNode || pItem == null)
-            return INVALID_INDEX
-        // Find the row of the parent in its own parent's visible list
-        val grandparent = pItem.parent ?: rootNode
-        return createIndex(grandparent.visibleChildren.indexOf(pItem), 0, pItem.id)
+        return when (val pItem = fsNodeIndex[child.internalId()]!!.parent) {
+            null, rootNode -> INVALID_INDEX
+            else -> { // Find the row of the parent in its own parent's visible list
+                val grandparent = pItem.parent ?: rootNode
+                createIndex(grandparent.visibleChildren.indexOf(pItem), 0, pItem.id)
+            }
+        }
     }
 
     override fun rowCount(parent: QModelIndex): Int {
@@ -157,7 +157,7 @@ private class FSModel(val rootNode: FSNode) : QAbstractItemModel() {
         if (role == Qt.ItemDataRole.DecorationRole && col == Column.Name.id) {
             if (item.isDir)
                 return dirIcon
-            val ext = item.path.extension
+            val ext = item.path.extension // NOTE: ".bashrc" -> "bashrc"
             if (ext.isEmpty())
                 return fileIcon
             if (ext in extIcons)
